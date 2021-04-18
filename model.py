@@ -112,7 +112,7 @@ class Attention(nn.Module):
 class Transformer(nn.Module):
     """The Transformer Encoder itself."""
 
-    def __init__(self, depth, dim, heads, dropout, mlp_hidden):
+    def __init__(self, depth, dim, heads, attention_dropout, dropout, mlp_hidden):
         """Constructor
 
         Args:
@@ -126,7 +126,7 @@ class Transformer(nn.Module):
         self.net  = nn.ModuleList([])
         for _ in range(depth):
             self.net.append(nn.ModuleList([
-                    Residual(PreNorm(dim, Attention(dim, heads=heads, dropout=dropout))),
+                    Residual(PreNorm(dim, Attention(dim, heads=heads, dropout=attention_dropout))),
                     Residual(PreNorm(dim, Mlp(dim, mlp_hidden, dropout=dropout)))
             ]))
     
@@ -139,8 +139,10 @@ class Transformer(nn.Module):
 class ViT(nn.Module):
     """Vision Transformer."""    
 
-    def __init__(self, image_size=224, patch_size=16, n_classes=100, depth=12, dim=768, heads=12, dropout=0., mlp_hidden=3072):
-        """Constructor. The default args are the configuration called "ViT-B/16" in the paper.
+    def __init__(self, image_size=224, patch_size=16, n_classes=100, depth=12, 
+            dim=768, heads=12, attention_dropout=0., dropout=0., mlp_hidden=3072):
+        """Constructor. The default args are the configuration called "ViT-B/16" in the paper. 
+        Except for n_classes, which is set to 100 for CIFAR100 instead of 1000.
 
         Args:
             image_size (int, optional): Size of image(height=width). Defaults to 224.
@@ -165,7 +167,7 @@ class ViT(nn.Module):
         self.pos_embedding = nn.Parameter(torch.randn(1, num_patches + 1, dim))
         self.cls_token = nn.Parameter(torch.randn(1, 1, dim))
 
-        self.transformer = Transformer(depth, dim, heads, dropout, mlp_hidden)
+        self.transformer = Transformer(depth, dim, heads, attention_dropout, dropout, mlp_hidden)
 
         self.mlp_head = nn.Sequential(
             nn.LayerNorm(dim),
