@@ -107,7 +107,7 @@ def train(model, args):
             val_loss = loss_obj(logits.view(-1, args.n_classes), y.view(-1))
             tqdm_val.set_description("Validating (loss=%2.5f)" % (val_loss.item()))
 
-        torch.save(model.to_state_dict(), os.path.join(args.ckpth, f'{args.model_type}.pth'))
+        torch.save(model.state_dict(), os.path.join(args.ckpth, f'{args.model_type}.pth'))
         if step == args.num_steps:
                 break
 
